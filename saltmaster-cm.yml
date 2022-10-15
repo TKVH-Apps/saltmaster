@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: saltmaster
+data:
+  master.conf: |
+    auto_accept: True
+    fileserver_backend:
+    - gitfs
+    gitfs_remotes:
+    - https://github.com/TKVH-Saltstack/saltstack-states.git

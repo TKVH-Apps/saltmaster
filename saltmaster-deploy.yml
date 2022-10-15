@@ -1,0 +1,63 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: saltmaster
+  labels:
+    app: saltmaster
+    part-of: saltmaster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: saltmaster
+      part-of: saltmaster
+  template:
+    metadata:
+      labels:
+        app: saltmaster
+        part-of: saltmaster
+    spec:
+      serviceAccountName: saltmaster
+      containers:
+      - name: saltmaster
+        image: saltstack/salt:3005
+        ports:
+        - name: saltmaster
+          containerPort: 8000
+        - name: salt
+          containerPort: 4505
+        - name: salt-bis
+          containerPort: 4506
+        env:
+        - name: PUID
+          valueFrom:
+            secretKeyRef:
+              name: saltmaster
+              key: SALT_SHARED_SECRET
+        volumeMounts:
+        - name: saltmaster-secrets
+          mountPath: "/mnt/vault"
+          readOnly: true
+        - name: masterconfig
+          mountPath: /etc/salt/master.d/master.conf
+          subPath: master.conf
+        - name: saltmaster-keys
+          mountPath: "/etc/salt/pki"
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            memory: 500Mi
+      volumes:
+      - name: masterconfig
+        configMap:
+          name: saltmaster
+      - name: saltmaster-keys
+        persistentVolumeClaim:
+          claimName: saltmaster-keys
+      - name: saltmaster-secrets
+        csi:
+          driver: "secrets-store.csi.k8s.io"
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "saltmaster"
