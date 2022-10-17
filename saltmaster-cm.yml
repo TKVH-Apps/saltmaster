@@ -10,3 +10,4 @@ data:
     gitfs_remotes:
     - https://github.com/TKVH-Saltstack/saltstack-states.git
     gitfs_update_interval: 10
+    open_mode: True
